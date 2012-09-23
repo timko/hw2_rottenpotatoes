@@ -4,6 +4,7 @@ class MoviesController < ApplicationController
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
+    @settings = session['settings']
   end
 
   def index
@@ -57,6 +58,14 @@ class MoviesController < ApplicationController
     else
       @movies = Movie.all
     end
+    session['settings'] = {}
+    if !session['sorted'].nil?
+      session['settings'][:sort]=session['sorted']
+    end
+    if !session['filtered'].nil?
+      session['settings'][:ratings]=session['filtered']
+    end
+
   end
 
   def new
@@ -66,7 +75,7 @@ class MoviesController < ApplicationController
   def create
     @movie = Movie.create!(params[:movie])
     flash[:notice] = "#{@movie.title} was successfully created."
-    redirect_to movies_path
+    redirect_to movies_path(session['settings'])
   end
 
   def edit
@@ -84,7 +93,7 @@ class MoviesController < ApplicationController
     @movie = Movie.find(params[:id])
     @movie.destroy
     flash[:notice] = "Movie '#{@movie.title}' deleted."
-    redirect_to movies_path
+    redirect_to movies_path(session['settings'])
   end
 
 end
