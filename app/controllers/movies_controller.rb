@@ -14,58 +14,51 @@ class MoviesController < ApplicationController
     if @selected_ratings.nil?
       @selected_ratings = {}
     end
+    if @sort.nil? and @selected_ratings == {} and !(session['sorted'].nil? and session['filtered'].nil?)
+      flash.keep
+      redirect_to movies_path(:ratings => session['filtered'], :sort => session['sorted'])
+    end
 
     #user either just got here or did some "non action" action
     if (@sort.nil? and @selected_ratings=={})
       @search_session = true
     end
+    
+    if !@sort.nil? and @selected_ratings != {}
+      session['sorted']=@sort
+      session['filtered']=@selected_ratings
+      @movies = Movie.where(:rating => @selected_ratings.keys).order(@sort)
+      return
+    end
 
     #user clicked to sort by field name
-    if !@sort.nil? or (@search_session and !session['sorted'].nil?)
-      if @sort.nil?
-        @sort = session['sorted']
-      else
-        session['sorted']=@sort
+    if !@sort.nil? #or (@search_session and !session['sorted'].nil?)
+      session['sorted']=@sort
+
+      if !session['filtered'].nil?
+        redirect_to movies_path(:sort => @sort, :ratings => session['filtered'])
+        #@selected_ratings = session['filtered']
+        #@movies = @movies.select do |film|
+        #@selected_ratings.has_key? film.rating
       end
 
       @movies = Movie.order(@sort)
 
-      if !session['filtered'].nil?
-        @selected_ratings = session['filtered']
-        @movies = @movies.select do |film|
-          @selected_ratings.has_key? film.rating
-        end
-      end
-
     #user clicked to filter by rating
-    elsif @selected_ratings != {} or (@search_session and !session['filtered'].nil?)
-      if @selected_ratings == {}
-        @selected_ratings = session['filtered']
-      else
-        session['filtered']=@selected_ratings
-      end
+    elsif @selected_ratings != {}
+      session['filtered']=@selected_ratings
 
       if !session['sorted'].nil?
-        @sort = session['sorted']
-        @movies = Movie.order(@sort)
+        redirect_to movies_path(:sort => session['sorted'], :ratings => @selected_ratings)
+        #@sort = session['sorted']
+        #@movies = Movie.order(@sort)
       else
-        @movies = Movie.all
-      end
-      @movies = @movies.select do |film|
-        @selected_ratings.has_key? film.rating
+        @movies = Movie.where(:rating => @selected_ratings.keys)
       end
 
     else
       @movies = Movie.all
     end
-    session['settings'] = {}
-    if !session['sorted'].nil?
-      session['settings'][:sort]=session['sorted']
-    end
-    if !session['filtered'].nil?
-      session['settings'][:ratings]=session['filtered']
-    end
-
   end
 
   def new
