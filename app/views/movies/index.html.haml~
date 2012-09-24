@@ -5,7 +5,8 @@
   Include: 
   - @all_ratings.each do |rating|
     = rating
-    = check_box_tag "ratings[#{rating}]", 1, @checked[rating]
+    = check_box_tag "ratings[#{rating}]", 1,
+        (@selected_ratings.has_key?(rating) or @selected_ratings == {}) ? true : false
   = submit_tag 'Refresh', {:id=>'ratings_submit'}
 %table#movies
   %thead

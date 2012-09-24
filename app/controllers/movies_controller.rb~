@@ -61,9 +61,6 @@ class MoviesController < ApplicationController
       end
 
     else
-      @checked = {}
-      @all_ratings.each_key do |rate|
-          @checked[rate] = true
       @movies = Movie.all
     end
   end
