@@ -18,12 +18,8 @@ class MoviesController < ApplicationController
       flash.keep
       redirect_to movies_path(:ratings => session['filtered'], :sort => session['sorted'])
     end
-
-    #user either just got here or did some "non action" action
-    if (@sort.nil? and @selected_ratings=={})
-      @search_session = true
-    end
     
+    #this will only occur from a redirect 
     if !@sort.nil? and @selected_ratings != {}
       session['sorted']=@sort
       session['filtered']=@selected_ratings
@@ -36,10 +32,8 @@ class MoviesController < ApplicationController
       session['sorted']=@sort
 
       if !session['filtered'].nil?
+        flash.keep
         redirect_to movies_path(:sort => @sort, :ratings => session['filtered'])
-        #@selected_ratings = session['filtered']
-        #@movies = @movies.select do |film|
-        #@selected_ratings.has_key? film.rating
       end
 
       @movies = Movie.order(@sort)
@@ -49,9 +43,8 @@ class MoviesController < ApplicationController
       session['filtered']=@selected_ratings
 
       if !session['sorted'].nil?
+        flash.keep
         redirect_to movies_path(:sort => session['sorted'], :ratings => @selected_ratings)
-        #@sort = session['sorted']
-        #@movies = Movie.order(@sort)
       else
         @movies = Movie.where(:rating => @selected_ratings.keys)
       end
